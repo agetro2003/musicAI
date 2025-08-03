@@ -3,6 +3,8 @@ import { StaffData } from "@/types/staffData";
 import { useEffect, useRef } from "react";
 import { Renderer, Stave, StaveNote, Formatter, Voice, Dot, Accidental } from "vexflow";
 import * as Tone from "tone";
+import { NoteData } from "@/types/note";
+
 export default function Staff() {
   const containerRef = useRef<HTMLDivElement>(null);
 const scoreData: StaffData = {
@@ -11,53 +13,69 @@ const scoreData: StaffData = {
   keySignature: "B",
   measures: [
     [
-      { keys: ["c/4"], duration: "q" },
-      { keys: ["d/4"], duration: "q" },
-      { keys: ["e/4"], duration: "qd", dotted: true },
-      { keys: ["f/4"], duration: "8" }
+      {
+        chord: ["c/4", "e/4", "g/4"],
+        duration: "q",
+        dotted: false,
+        accidentals: ["#", null, null]
+      },
+      {
+        chord: ["d/4", "f/4", "a/4"],
+        duration: "q",
+        dotted: false,
+        accidentals: [null, null, null]
+      }, 
+      {
+        chord: ["e/4", "g/4", "b/4"],
+        duration: "q",
+        dotted: true,
+        accidentals: [null, "#", null]
+      },
+      {
+        chord: ["f/4"],
+        duration: "8",
+        dotted: false,
+        accidentals: [null, null, null]
+      }
     ],
     [
-      { keys: ["g/4"], duration: "h", accidental: "#" },
-      { keys: ["a/4"], duration: "q" },
-      { keys: ["b/4"], duration: "q" }
+      {
+        chord: ["e/4", "g/4", "b/4"],
+        duration: "q",
+        dotted: true,
+        accidentals: [null, "#", null]
+      },
+      {
+        chord: ["f/4"],
+        duration: "q",
+        dotted: false,
+        accidentals: [null, null, null]
+      },
+      {
+        chord: ["g/4"],
+        duration: "q",
+        dotted: false,
+        accidentals: [null, null, null]
+      },
+      {
+        chord: ["a/4", "c/5"],
+        duration: "8",
+        dotted: false,
+        accidentals: [null, null]
+      }
     ],
     [
-      { keys: ["c/5"], duration: "q", accidental: "b" },
-      { keys: ["d/4"], duration: "q" },
-      { keys: ["e/4"], duration: "8r" },
-      { keys: ["f/4"], duration: "8" },
-      { keys: ["g/4"], duration: "q" }
-    ],
-    [
-      { keys: ["f/4"], duration: "q" },
-      { keys: ["g/4"], duration: "q" },
-      { keys: ["a/4"], duration: "qd", dotted: true },
-      { keys: ["b/4"], duration: "8" }
-    ],
-    [
-      { keys: ["b/4"], duration: "h" },
-      { keys: ["c/4"], duration: "q" },
-      { keys: ["d/4"], duration: "q" }
-    ],
-    [
-      { keys: ["e/4"], duration: "q", accidental: "n" }, 
-      { keys: ["f/4"], duration: "q" }, 
-      { keys: ["g/4"], duration: "8r" },
-      { keys: ["a/4"], duration: "8" },
-      { keys: ["b/4"], duration: "q"},
-  ],
-    [
-      { keys: ["c/5"], duration: "q" },
-      { keys: ["d/5"], duration: "q" },
-      { keys: ["e/5"], duration: "qd", dotted: true },
-      { keys: ["f/4"], duration: "8" }
-    ],
-    [
-      { keys: ["g/4"], duration: "h", accidental: "#" },
-      { keys: ["a/4"], duration: "q" },
-      { keys: ["b/4"], duration: "q" }
-    ]
+      {
+        chord: ["g/4"],
+        duration: "h"
+      },
+      {
+        chord: ["g/4"],
+        duration: "hr"
+      }
 
+    ]
+    
 ]
 };
 
@@ -87,24 +105,29 @@ const measureYSpacing = 100; // Vertical spacing between measures
              .addTimeSignature(scoreData.timeSignature);
       }
       stave.setContext(context).draw();
+      const measures = measure.map(notedata => {
 
-      const notes = measure.map(noteData => {
-        const note: StaveNote = new StaveNote({
-          keys: noteData.keys,
-          duration: noteData.duration
-        });
+        const duration = notedata.duration + (notedata.dotted ? 'd' : '');
 
-        if (noteData.dotted) {
-          Dot.buildAndAttach([note], { all: true });
-        }
+          const staveNote = new StaveNote({
+            keys: notedata.chord,
+            duration: duration,
+          });
 
-        if (noteData.accidental) {
-          note.addModifier(new Accidental(noteData.accidental));
-        }
+          if (notedata.dotted) {
+            Dot.buildAndAttach([staveNote], { all: true });
+          }
 
-        return note;
-      });
+          if (notedata.accidentals) {
+            notedata.accidentals.forEach((acc, i) => {
+              if (acc) staveNote.addModifier(new Accidental(acc), i);
+            });
+          }
+          return staveNote;
+            }
+      );
 
+      const notes = measures.flat(); // Flatten the array of arrays
       const numBeats = parseInt(scoreData.timeSignature.split('/')[0], 10);
       const beatValue = parseInt(scoreData.timeSignature.split('/')[1], 10);
     
@@ -116,50 +139,82 @@ const measureYSpacing = 100; // Vertical spacing between measures
   }, []);
 
   // function to parse the note data and play the sound (ej: c/4 becomes C4)
-  const parseNote = (noteData: { keys: string[]; duration: string }) => {
-    const note = noteData.keys[0].replace('/', '');
-    return note.charAt(0).toUpperCase() + note.slice(1);
+  // if the note have an accidental, it should be added to the note (ej: c#/4 becomes C#4)
+  const parseNote = (noteData: NoteData) => {
+    return noteData.chord.map((note, index) => {
+      const [pitch, octave] = note.split('/');
+      const accidental = noteData.accidentals ? noteData.accidentals[index] : null;
+      return pitch.toUpperCase() + (accidental ? accidental : '') + octave; // Convert to C4, D4, C#4, etc.
+    });
   };
 
   //function to parse the duration (ej: "q" becomes "4n"
-  const parseDuration = (duration: string) => {
+  const parseDuration = (duration: string, dotted: boolean) => {
+    let newDuration = duration;
     switch (duration) {
       case 'q':
-        return '4n';
+        newDuration = '4n';
+        break;
       case 'h':
-        return '2n';
+        newDuration = '2n';
+        break;
       case '8':
-        return '8n';
+        newDuration = '8n';
+        break;
+      case'16':
+        newDuration = '16n';
+        break;
+      case 'w':
+        newDuration = '1n';
+        break;
+        // silent notes
+      case 'hr':
+        newDuration = '2n';
+        break;
       case '8r':
-        return '8n';
-      case 'qd':
-        return '4n.';
-      default:
-        return duration;
+        newDuration = '8n';
+        break;
+      case '16r':
+        newDuration = '16n';
+        break;
+      case 'qr':
+        newDuration = '4n';
+        break;
+      case 'wr':
+        newDuration = '1n';
+        break;
+      default: 
+        newDuration = duration; // Keep original if no match
     }
+    if (dotted) {
+      newDuration += '.'; // Add dotted if applicable
+    }
+
+    return newDuration;
   }
 
   const playStaff = async () => {
    await Tone.start();
-    const synth = new Tone.Synth().toDestination();
+    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
     
   let now = Tone.now();
   let currentTime = now;
     scoreData.measures.forEach((measure) => {
       measure.forEach((noteData) => {
-        const note = parseNote(noteData);
-        const duration = parseDuration(noteData.duration);
-        
-        //silent notes
-        if (!noteData.duration.includes('r')) {
+          const note = parseNote(noteData);
+          const duration = parseDuration(noteData.duration, noteData.dotted || false);
+
+          //silent notes
+          if (!noteData.duration.includes('r')) {
           synth.triggerAttackRelease(note, duration, currentTime);
         }
         currentTime += Tone.Time(duration).toSeconds();
 
-      });
+    
     });
 
-  };
+  })
+};
   return (
   <div>
     <div ref={containerRef}></div>

@@ -1,10 +1,16 @@
+import { Note } from "vexflow";
 
 export type NoteData = {
-    keys: string[]; // Array of note keys (e.g., ["c/4", "d/4"])
+    chord: string[]; // Array of note keys (e.g., ["c/4", "d/4"])
     duration: string; // Duration of the note (e.g., "8", "hd", "8r")
     dotted?: boolean; // Optional flag for dotted notes
-    accidental?: "#"| "b" | "n" | "##" | "bb"; // Optional accidental 
+    accidentals?: ("#"| "b" | "n" | "##" | "bb" | null)[]; // Optional accidental 
 }
 
 
-export type Measures = NoteData[]; // Array of Note objects
+
+export type Measure = NoteData[];
+
+
+export type Measures = Measure[]; // Array of Note objects
+
