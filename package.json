@@ -2,23 +2,30 @@
   "name": "mic",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
     "lint": "next lint"
   },
   "dependencies": {
     "next": "15.3.5",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "tone": "^15.2.7",
+    "uuid": "^11.1.0",
     "vexflow": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/qrcode.react": "^3.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "abcjs": "^6.5.2",
     "typescript": "^5"
   }
 }

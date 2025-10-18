@@ -1,8 +1,83 @@
 import Staff from "@/components/staff";
 import styles from "./page.module.css";
 import Note from "@/components/note"
+import { StaffData } from "@/types/staffData";
 
 export default function Home() {
+
+  const scoreData: StaffData = {
+    clef: "treble",
+    timeSignature: "4/4",
+    keySignature: "Em",
+    measures: [
+      [
+        {
+          chord: ["c/4", "e/4", "g/4"],
+          duration: "q",
+          dotted: false,
+          accidentals: ["#", null, null]
+        },
+        {
+          chord: ["d/4", "f/4", "a/4"],
+          duration: "q",
+          dotted: false,
+          accidentals: [null, null, null]
+        }, 
+        {
+          chord: ["e/4", "g/4", "b/4"],
+          duration: "q",
+          dotted: true,
+          accidentals: [null, "#", null]
+        },
+        {
+          chord: ["f/4"],
+          duration: "8",
+          dotted: false,
+          accidentals: [null, null, null]
+        }
+      ],
+      [
+        {
+          chord: ["e/4", "g/4", "b/4"],
+          duration: "q",
+          dotted: true,
+          accidentals: [null, "#", null]
+        },
+        {
+          chord: ["f/4"],
+          duration: "q",
+          dotted: false,
+          accidentals: [null, null, null]
+        },
+        {
+          chord: ["g/4"],
+          duration: "q",
+          dotted: false,
+          accidentals: [null, null, null]
+        },
+        {
+          chord: ["a/4", "c/5"],
+          duration: "8",
+          dotted: false,
+          accidentals: [null, null]
+        }
+      ],
+      [
+        {
+          chord: ["g/4"],
+          duration: "h"
+        },
+        {
+          chord: ["g/4"],
+          duration: "hr"
+        }
+  
+      ]
+      
+  ]
+  };
+  
+
   return (
     <div >
       <Note 
@@ -88,8 +163,7 @@ export default function Home() {
       buttonText="Si"
       />
 
-      <Staff />
-      
+      <Staff scoreData={scoreData} />
 
     </div>
   );
